@@ -81,7 +81,7 @@ def upload_to_dropbox(file_name, file, dropbox_token, dropbox_folder):
     # Replace the '0' at the end of the url with '1' for direct download
     return re.sub('dl=.*', 'raw=1', r.json()['url'])
 
-def get_app(dir):
+def get_app(app_dir):
     '''Extract app data
 
     Args:
@@ -91,7 +91,7 @@ def get_app(dir):
         (str, str): App version and path app file.
     '''
     # Get output.json file to get info about app
-    output_path = os.path.join(dir, 'output.json')
+    output_path = os.path.join(app_dir, 'output.json')
 
     with(open(output_path)) as app_output:
         json_data = json.load(app_output)
@@ -106,7 +106,7 @@ def get_app(dir):
         return None, None
 
     app_version = json_data[0][apk_details_key]['versionName']
-    app_file = os.path.join(release_dir, json_data[0][apk_details_key]['outputFile'])
+    app_file = os.path.join(app_dir, json_data[0][apk_details_key]['outputFile'])
     return app_version, app_file
 
 def get_rename_file_name(app_name, app_version):
@@ -161,6 +161,7 @@ def get_message(app_name, app_version, app_url, changelog, template_file):
         (str): Message text
     '''
     template = ''
+    message = ''
 
     with(open(template_file)) as template_file:
         # Open template file and replace placeholders with data
@@ -171,7 +172,10 @@ def get_message(app_name, app_version, app_url, changelog, template_file):
             app_version=app_version
         )
     
-    return template
+    for line in template.splitlines():
+        message += line + '\n'
+    
+    return message
 
 def send_message_telegram(bot_code, chat_id, app_name, file_url, message):
     ''' Send message bot to chat.
