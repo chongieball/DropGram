@@ -97,16 +97,24 @@ def get_app(app_dir):
         json_data = json.load(app_output)
 
     apk_details_key = ''
-    if 'apkInfo' in json_data[0]:
+
+    #multiple build flavor, because i can't get real versionName in output.json flavor
+    if 'elements' in json_data:
+        outputFile = json_data['elements'][0]['outputFile']
+        app_version = outputFile.split('_')[1].replace('-', '.')
+        app_file = os.path.join(app_dir, outputFile)
+    elif 'apkInfo' in json_data[0]:
         apk_details_key = 'apkInfo'
+        app_version = json_data[0][apk_details_key]['versionName']
+        app_file = os.path.join(app_dir, json_data[0][apk_details_key]['outputFile'])
     elif 'apkData' in json_data[0]:
         apk_details_key = 'apkData'
+        app_version = json_data[0][apk_details_key]['versionName']
+        app_file = os.path.join(app_dir, json_data[0][apk_details_key]['outputFile'])
     else:
         print("Failed: parsing json in output file")
         return None, None
 
-    app_version = json_data[0][apk_details_key]['versionName']
-    app_file = os.path.join(app_dir, json_data[0][apk_details_key]['outputFile'])
     return app_version, app_file
 
 def get_rename_file_name(app_name, app_version):
